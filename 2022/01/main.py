@@ -1,5 +1,5 @@
 if __name__ == "__main__":
-    with open("d1.txt", "r") as file:
+    with open("input.txt", "r") as file:
         calories = file.read().splitlines()
 
     elf_counter = 0
