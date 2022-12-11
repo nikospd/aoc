@@ -2,12 +2,13 @@ from typing import Sequence, Mapping
 import json
 import time
 import math
+import cProfile
 
 
 class Monkey:
     idx: int
     items: Sequence[int]
-    operation: str
+    operation: Mapping[str, int]
     test: Mapping[str, int]
 
     def __init__(self, idx, monkey_str):
@@ -20,7 +21,15 @@ class Monkey:
         self.items = json.loads("[" + items_str.split(": ")[1] + "]")
 
     def parse_operation(self, operation_str):
-        self.operation = operation_str.split("= ")[1]
+        operation_str = operation_str.split("= ")[1]
+        parts = operation_str.split(" ")
+        if parts[1] == "+":
+            self.operation = {"operator": 1, "operand": int(parts[2])}
+        else:
+            if parts[2] == "old":
+                self.operation = {"operator": 2, "operand": 0}
+            else:
+                self.operation = {"operator": 2, "operand": int(parts[2])}
 
     def parse_test(self, test_str):
         self.test = {
@@ -30,7 +39,13 @@ class Monkey:
         }
 
     def operate(self, value) -> int:
-        return eval(self.operation.replace("old", str(value)))
+        if self.operation["operator"] == 1:
+            return value + self.operation["operand"]
+        else:
+            if self.operation["operand"] == 0:
+                return value ** 2
+            else:
+                return value * self.operation["operand"]
 
     def do_test(self, value) -> int:
         if value % self.test["limit"]:
@@ -44,24 +59,27 @@ def parse_monkeys(monkeys, input_raw):
         monkeys.append(Monkey(i//7, input_raw[i:i+6]))
 
 
+def calculate(monkeys, inspections, rounds, lcm):
+    for i in range(rounds):
+        for monkey in monkeys:
+            for _ in range(len(monkey.items)):
+                inspections[monkey.idx] += 1
+                if lcm is None:
+                    stress = monkey.operate(monkey.items.pop(0)) // 3
+                else:
+                    stress = monkey.operate(monkey.items.pop(0)) % lcm
+                monkeys[monkey.do_test(stress)].items.append(stress)
+
+
 if __name__ == "__main__":
     start_time = time.time()
-    with open("input_test.txt", "r") as file:
+    with open("input.txt", "r") as file:
         input_raw = file.read().splitlines()
     monkeys = []
     parse_monkeys(monkeys, input_raw)
     inspections = [0] * len(monkeys)
-    num_of_rounds = 1000
-    for i in range(num_of_rounds):
-        for monkey in monkeys:
-            for _ in range(len(monkey.items)):
-                inspections[monkey.idx] += 1
-                stress = monkey.operate(monkey.items.pop(0)) // 3
-                monkeys[monkey.do_test(stress)].items.append(stress)
-        if not (i+1) % 20 and i+1 >= 20:
-            print("Round: ", i)
-            print(inspections)
-
+    lcm = math.prod(monkey.test["limit"] for monkey in monkeys)
+    calculate(monkeys, inspections, 10000, lcm)
     inspections.sort(reverse=True)
     print(inspections[0] * inspections[1])
     print("--- %s seconds ---" % (time.time() - start_time))
