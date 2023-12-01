@@ -1,5 +1,6 @@
 import re
 
+
 def char_num_translate(word):
     if word == "one":
         return "1"
@@ -27,10 +28,7 @@ if __name__ == "__main__":
     word_list = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
     with open("input.txt", "r") as file:
         input_raw = file.read().splitlines()
-    # pattern = "[" + "".join(word_list) + "]"
-    # pattern = "|".join(map(re.escape, word_list))
     pattern = r'(?=(' + '|'.join(map(re.escape, word_list)) + r'))'
-
 
     total = 0
     for line in input_raw:
