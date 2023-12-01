@@ -20,26 +20,60 @@ def get_surface_area(matrix):
     return surface
 
 
-def floodFillLayer(x, y, z, matrix, dimensions):
-    if not 0 < x < dimensions[0]:
+def floodFill(x, y, z, matrix, dimensions):
+    if not 0 < x <= dimensions[0]:
         return
-    if not 0 < y < dimensions[1]:
+    if not 0 < y <= dimensions[1]:
         return
-    if not 0 < z < dimensions[2]:
+    if not 0 < z <= dimensions[2]:
         return
     if [x, y, z] in matrix:
         return
     matrix.append([x, y, z])
-    floodFillLayer(x + 1, y, z, matrix, dimensions)
-    floodFillLayer(x - 1, y, z, matrix, dimensions)
-    floodFillLayer(x, y + 1, z, matrix, dimensions)
-    floodFillLayer(x, y - 1, z, matrix, dimensions)
-    # floodFill(x, y, z + 1, matrix, dimensions)
-    # floodFill(x, y, z - 1, matrix, dimensions)
+    floodFill(x + 1, y, z, matrix, dimensions)
+    floodFill(x - 1, y, z, matrix, dimensions)
+    floodFill(x, y + 1, z, matrix, dimensions)
+    floodFill(x, y - 1, z, matrix, dimensions)
+    floodFill(x, y, z + 1, matrix, dimensions)
+    floodFill(x, y, z - 1, matrix, dimensions)
 
-def floodFill(x, y, z, matrix, dimensions):
-    for i in range(dimensions[2] + 1):
-        floodFillLayer(x, y, z + i, matrix, dimensions)
+
+def isValid(x, y, z, matrix, dimensions):
+    if not 0 < x <= dimensions[0]:
+        return False
+    if not 0 < y <= dimensions[1]:
+        return False
+    if not 0 < z <= dimensions[2]:
+        return False
+    if [x, y, z] in matrix:
+        return False
+    return True
+
+
+def floodFillQueue(x, y, z, matrix, dimensions):
+    queue = [[x, y, z]]
+    matrix.append([x, y, z])
+
+    while queue:
+        cur_point = queue.pop()
+        if isValid(cur_point[0] + 1, cur_point[1], cur_point[2], matrix, dimensions):
+            queue.append([cur_point[0] + 1, cur_point[1], cur_point[2]])
+            matrix.append([cur_point[0] + 1, cur_point[1], cur_point[2]])
+        if isValid(cur_point[0] - 1, cur_point[1], cur_point[2], matrix, dimensions):
+            queue.append([cur_point[0] - 1, cur_point[1], cur_point[2]])
+            matrix.append([cur_point[0] - 1, cur_point[1], cur_point[2]])
+        if isValid(cur_point[0], cur_point[1] + 1, cur_point[2], matrix, dimensions):
+            queue.append([cur_point[0], cur_point[1] + 1, cur_point[2]])
+            matrix.append([cur_point[0], cur_point[1] + 1, cur_point[2]])
+        if isValid(cur_point[0], cur_point[1] - 1, cur_point[2], matrix, dimensions):
+            queue.append([cur_point[0], cur_point[1] - 1, cur_point[2]])
+            matrix.append([cur_point[0], cur_point[1] - 1, cur_point[2]])
+        if isValid(cur_point[0], cur_point[1], cur_point[2] + 1, matrix, dimensions):
+            queue.append([cur_point[0], cur_point[1], cur_point[2] + 1])
+            matrix.append([cur_point[0], cur_point[1], cur_point[2] + 1])
+        if isValid(cur_point[0], cur_point[1], cur_point[2] - 1, matrix, dimensions):
+            queue.append([cur_point[0], cur_point[1], cur_point[2] - 1])
+            matrix.append([cur_point[0], cur_point[1], cur_point[2] - 1])
 
 
 if __name__ == "__main__":
@@ -55,7 +89,8 @@ if __name__ == "__main__":
     print("drops: ", drops_surface)
 
     dimensions = find_dimensions(drops)
-    floodFill(1, 1, 1, drops, dimensions)
+    # floodFill(1, 1, 1, drops, dimensions)
+    floodFillQueue(1, 1, 1, drops, dimensions)
 
     trapped = []
     for i in range(1, dimensions[0]):
